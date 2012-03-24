@@ -28,7 +28,7 @@ class AddCollabRuleType extends eZWorkflowEventType
 {
     function __construct()
     {
-        $this->eZWorkflowEventType( 'addcollabrule', ezi18n( 'extension/projects', 'Add collaboration rule' ) );
+        $this->eZWorkflowEventType( 'addcollabrule', ezpI18n::tr( 'extension/projects', 'Add collaboration rule' ) );
         // limit workflows which use this event to be used only on the post-publish trigger
         $this->setTriggerTypes( array( 'content' => array( 'publish' => array( 'after' ) ) ) );
     }
