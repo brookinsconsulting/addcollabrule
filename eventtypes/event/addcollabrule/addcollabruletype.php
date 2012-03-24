@@ -1,9 +1,9 @@
 <?php
 //
 // ## BEGIN COPYRIGHT, LICENSE AND WARRANTY NOTICE ##
-// SOFTWARE NAME: eZ publish addcollabrule extension
-// SOFTWARE RELEASE: 0.x
-// COPYRIGHT NOTICE: Copyright (C) 2007 Kristof Coomans <http://blog.kristofcoomans.be>
+// SOFTWARE NAME: eZ Publish addcollabrule extension
+// SOFTWARE RELEASE: 2.x
+// COPYRIGHT NOTICE: Copyright (C) 2007-2008 Kristof Coomans <http://blog.kristofcoomans.be>
 // SOFTWARE LICENSE: GNU General Public License v2.0
 // NOTICE: >
 //   This program is free software; you can redistribute it and/or
@@ -24,12 +24,9 @@
 // ## END COPYRIGHT, LICENSE AND WARRANTY NOTICE ##
 //
 
-include_once( 'kernel/classes/ezworkflowtype.php' );
-include_once( 'kernel/classes/ezcontentobject.php' );
-
 class AddCollabRuleType extends eZWorkflowEventType
 {
-    function AddCollabRuleType()
+    function __construct()
     {
         $this->eZWorkflowEventType( 'addcollabrule', ezi18n( 'extension/projects', 'Add collaboration rule' ) );
         // limit workflows which use this event to be used only on the post-publish trigger
@@ -41,14 +38,13 @@ class AddCollabRuleType extends eZWorkflowEventType
         return array( 'handler', 'selection' );
     }
 
-    function &attributeDecoder( &$event, $attr )
+    function attributeDecoder( $event, $attr )
     {
         $retValue = null;
         switch( $attr )
         {
             case 'handler':
             {
-                include_once( 'kernel/classes/notification/handler/ezcollaborationnotification/ezcollaborationnotificationhandler.php' );
                 $retValue = new eZCollaborationNotificationHandler();
             } break;
 
@@ -69,7 +65,7 @@ class AddCollabRuleType extends eZWorkflowEventType
         return $retValue;
     }
 
-    function fetchHTTPInput( &$http, $base, &$event )
+    function fetchHTTPInput( $http, $base, $event )
     {
         $selectionVar = 'CollaborationHandlerSelection_' . $event->attribute( 'id' );
         if ( $http->hasPostVariable( $selectionVar ) )
@@ -79,29 +75,28 @@ class AddCollabRuleType extends eZWorkflowEventType
         }
     }
 
-    function execute( &$process, &$event )
+    function execute( $process, $event )
     {
         $parameters = $process->attribute( 'parameter_list' );
-        $object =& eZContentObject::fetch( $parameters['object_id'] );
+        $object = eZContentObject::fetch( $parameters['object_id'] );
 
         $collaborationIdentifierList = $event->attribute( 'selection' );
 
         foreach ( $collaborationIdentifierList as $collaborationIdentifier )
         {
-            include_once('kernel/classes/notification/handler/ezcollaborationnotification/ezcollaborationnotificationrule.php');
-            $existing = &eZCollaborationNotificationRule::fetchItemTypeList( $collaborationIdentifier, array( $object->attribute( 'id' ) ) );
+            $existing = eZCollaborationNotificationRule::fetchItemTypeList( $collaborationIdentifier, array( $object->attribute( 'id' ) ) );
 
             if ( count( $existing ) == 0 )
             {
-                $rule = &eZCollaborationNotificationRule::create( $collaborationIdentifier, $object->attribute( 'id' ) );
+                $rule = eZCollaborationNotificationRule::create( $collaborationIdentifier, $object->attribute( 'id' ) );
                 $rule->store( );
             }
         }
 
-        return EZ_WORKFLOW_TYPE_STATUS_ACCEPTED;
+        return eZWorkflowType::STATUS_ACCEPTED;
     }
 }
 
-eZWorkflowEventType::registerType( 'addcollabrule', 'AddCollabRuleType' );
+eZWorkflowEventType::registerEventType( 'addcollabrule', 'AddCollabRuleType' );
 
 ?>
